@@ -1,10 +1,8 @@
-<?php
-
-namespace AdamWathan\Form\Elements;
+<?php namespace AdamWathan\Form\Elements;
 
 class Hidden extends Input
 {
-    protected $attributes = [
+    protected $attributes = array(
         'type' => 'hidden',
-    ];
+    );
 }

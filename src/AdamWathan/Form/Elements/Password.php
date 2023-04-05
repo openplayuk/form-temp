@@ -1,10 +1,8 @@
-<?php
-
-namespace AdamWathan\Form\Elements;
+<?php namespace AdamWathan\Form\Elements;
 
 class Password extends Text
 {
-    protected $attributes = [
+    protected $attributes = array(
         'type' => 'password',
-    ];
+    );
 }

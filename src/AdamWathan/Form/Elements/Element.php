@@ -1,10 +1,8 @@
-<?php
-
-namespace AdamWathan\Form\Elements;
+<?php namespace AdamWathan\Form\Elements;
 
 abstract class Element
 {
-    protected $attributes = [];
+    protected $attributes = array();
 
     protected function setAttribute($attribute, $value = null)
     {
@@ -25,23 +23,15 @@ abstract class Element
         return $this->attributes[$attribute];
     }
 
-    public function data($attribute, $value = null)
+    public function data($attribute, $value)
     {
-        if (is_array($attribute)) {
-            foreach ($attribute as $key => $val) {
-                $this->setAttribute('data-'.$key, $val);
-            }
-        } else {
-            $this->setAttribute('data-'.$attribute, $value);
-        }
-
+        $this->setAttribute('data-'.$attribute, $value);
         return $this;
     }
 
     public function attribute($attribute, $value)
     {
         $this->setAttribute($attribute, $value);
-
         return $this;
     }
 
@@ -52,7 +42,6 @@ abstract class Element
         }
 
         $this->removeAttribute($attribute);
-
         return $this;
     }
 
@@ -63,7 +52,6 @@ abstract class Element
         }
 
         $this->setAttribute('class', $class);
-
         return $this;
     }
 
@@ -80,14 +68,12 @@ abstract class Element
         }
 
         $this->setAttribute('class', $class);
-
         return $this;
     }
 
     public function id($id)
     {
         $this->setId($id);
-
         return $this;
     }
 
@@ -105,47 +91,25 @@ abstract class Element
 
     protected function renderAttributes()
     {
-        list($attributes, $values) = $this->splitKeysAndValues($this->attributes);
+        $result = '';
 
-        return implode(array_map(function ($attribute, $value) {
-            return sprintf(' %s="%s"', $attribute, $this->escape($value));
-        }, $attributes, $values));
-    }
-
-    protected function splitKeysAndValues($array)
-    {
-        // Disgusting crap because people might have passed a collection
-        $keys = [];
-        $values = [];
-
-        foreach ($array as $key => $value) {
-            $keys[] = $key;
-            $values[] = $value;
+        foreach ($this->attributes as $attribute => $value) {
+            $result .= " {$attribute}=\"{$value}\"";
         }
 
-        return [$keys, $values];
+        return $result;
     }
 
-    protected function setBooleanAttribute($attribute, $value)
+    public function translatable()
     {
-        if ($value) {
-            $this->setAttribute($attribute, $attribute);
-        } else {
-            $this->removeAttribute($attribute);
-        }
-    }
-
-    protected function escape($value)
-    {
-        return htmlentities($value, ENT_QUOTES, 'UTF-8');
+        $this->addClass('translatable');
     }
 
     public function __call($method, $params)
     {
-        $params = count($params) ? $params : [$method];
-        $params = array_merge([$method], $params);
-        call_user_func_array([$this, 'attribute'], $params);
-
+        $params = count($params) ? $params : array($method);
+        $params = array_merge(array($method), $params);
+        call_user_func_array(array($this, 'attribute'), $params);
         return $this;
     }
 }

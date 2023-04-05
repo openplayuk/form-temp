@@ -1,6 +1,4 @@
-<?php
-
-namespace AdamWathan\Form\OldInput;
+<?php namespace AdamWathan\Form\OldInput;
 
 use Illuminate\Session\Store as Session;
 
@@ -25,6 +23,6 @@ class IlluminateOldInputProvider implements OldInputInterface
 
     protected function transformKey($key)
     {
-        return str_replace(['.', '[]', '[', ']'], ['_', '', '.', ''], $key);
+        return str_replace(array('.', '[]', '[', ']'), array('_', '', '.', ''), $key);
     }
 }

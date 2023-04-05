@@ -1,12 +1,8 @@
-<?php
+<?php namespace AdamWathan\Form;
 
-namespace AdamWathan\Form;
-
-use AdamWathan\Form\Binding\BoundData;
 use AdamWathan\Form\Elements\Button;
 use AdamWathan\Form\Elements\Checkbox;
 use AdamWathan\Form\Elements\Date;
-use AdamWathan\Form\Elements\DateTimeLocal;
 use AdamWathan\Form\Elements\Email;
 use AdamWathan\Form\Elements\File;
 use AdamWathan\Form\Elements\FormOpen;
@@ -22,13 +18,10 @@ use AdamWathan\Form\OldInput\OldInputInterface;
 
 class FormBuilder
 {
-    protected $oldInput;
-
-    protected $errorStore;
-
-    protected $csrfToken;
-
-    protected $boundData;
+    private $oldInput;
+    private $errorStore;
+    private $csrfToken;
+    private $model;
 
     public function setOldInputProvider(OldInputInterface $oldInputProvider)
     {
@@ -63,8 +56,7 @@ class FormBuilder
 
     public function close()
     {
-        $this->unbindData();
-
+        $this->unbindModel();
         return '</form>';
     }
 
@@ -90,17 +82,6 @@ class FormBuilder
         return $date;
     }
 
-    public function dateTimeLocal($name)
-    {
-        $date = new DateTimeLocal($name);
-
-        if (!is_null($value = $this->getValueFor($name))) {
-            $date->value($value);
-        }
-
-        return $date;
-    }
-
     public function email($name)
     {
         $email = new Email($name);
@@ -112,13 +93,18 @@ class FormBuilder
         return $email;
     }
 
-    public function hidden($name)
+    public function hidden($name, $value = null)
     {
         $hidden = new Hidden($name);
 
-        if (!is_null($value = $this->getValueFor($name))) {
+        if ($value) {
             $hidden->value($value);
+        } else {
+            if (!is_null($value = $this->getValueFor($name))) {
+                $hidden->value($value);
+            }
         }
+
 
         return $hidden;
     }
@@ -144,17 +130,25 @@ class FormBuilder
         $checkbox = new Checkbox($name, $value);
 
         $oldValue = $this->getValueFor($name);
-        $checkbox->setOldValue($oldValue);
+
+        if ($value == $oldValue) {
+            $checkbox->check();
+        }
 
         return $checkbox;
     }
 
     public function radio($name, $value = null)
     {
+        $value = is_null($value) ? $name : $value;
+
         $radio = new RadioButton($name, $value);
 
         $oldValue = $this->getValueFor($name);
-        $radio->setOldValue($oldValue);
+
+        if ($value == $oldValue) {
+            $radio->check();
+        }
 
         return $radio;
     }
@@ -162,14 +156,6 @@ class FormBuilder
     public function button($value, $name = null)
     {
         return new Button($value, $name);
-    }
-
-    public function reset($value = 'Reset')
-    {
-        $reset = new Button($value);
-        $reset->attribute('type', 'reset');
-
-        return $reset;
     }
 
     public function submit($value = 'Submit')
@@ -180,7 +166,7 @@ class FormBuilder
         return $submit;
     }
 
-    public function select($name, $options = [])
+    public function select($name, $options = array())
     {
         $select = new Select($name, $options);
 
@@ -213,7 +199,7 @@ class FormBuilder
 
     public function hasError($name)
     {
-        if (! isset($this->errorStore)) {
+        if (!isset($this->errorStore)) {
             return false;
         }
 
@@ -222,11 +208,11 @@ class FormBuilder
 
     public function getError($name, $format = null)
     {
-        if (! isset($this->errorStore)) {
+        if (!isset($this->errorStore)) {
             return null;
         }
 
-        if (! $this->hasError($name)) {
+        if (!$this->hasError($name)) {
             return '';
         }
 
@@ -239,9 +225,10 @@ class FormBuilder
         return $message;
     }
 
-    public function bind($data)
+    public function bind($model)
     {
-        $this->boundData = new BoundData($data);
+        $this->model = is_array($model) ? (object)$model : $model;
+        return $this->hidden('model', class_basename($model))->data('id', $model->id);
     }
 
     public function getValueFor($name)
@@ -250,8 +237,8 @@ class FormBuilder
             return $this->getOldInput($name);
         }
 
-        if ($this->hasBoundData()) {
-            return $this->getBoundValue($name, null);
+        if ($this->hasModelValue($name)) {
+            return $this->getModelValue($name);
         }
 
         return null;
@@ -259,7 +246,7 @@ class FormBuilder
 
     protected function hasOldInput()
     {
-        if (! isset($this->oldInput)) {
+        if (!isset($this->oldInput)) {
             return false;
         }
 
@@ -268,27 +255,71 @@ class FormBuilder
 
     protected function getOldInput($name)
     {
-        return $this->oldInput->getOldInput($name);
+        return $this->escape($this->oldInput->getOldInput($name));
     }
 
-    protected function hasBoundData()
+    protected function hasModelValue($name)
     {
-        return isset($this->boundData);
+        if (!isset($this->model)) {
+            return false;
+        }
+        return isset($this->model->{$name}) || $this->checkForJSON($name) || method_exists($this->model, '__get');
     }
 
-    protected function getBoundValue($name, $default)
+    protected function checkForJSON($name)
     {
-        return $this->boundData->get($name, $default);
+
+        if (strpos(" " . $name, "json") > 0) {
+            $arrayName = explode("[", $name)[0];
+            $array = $this->model->$arrayName;
+            if (substr_count($name, "[") > 1) {
+                //extra level of nesting
+                $name = str_replace("'", "", $name);
+                $name = str_replace('"', "", $name);
+                $firstLevel = explode("[", $name)[1];
+                $firstLevel = str_replace("]", "", $firstLevel);
+                $secondLevel = explode("[", $name)[2];
+                $secondLevel = str_replace("]", "", $secondLevel);
+                if (isset($array[$firstLevel][$secondLevel])) {
+                    return $array[$firstLevel][$secondLevel];
+                }
+            } else {
+                $key = str_replace("]", "", explode("[", $name)[1]);
+                $key = str_replace("'", "", $key);
+                $key = str_replace('"', "", $key);
+                if (isset($array[$key])) {
+                    return $array[$key];
+                }
+            }
+        } else {
+            if (isset($this->model->{$name})) {
+                return $this->model->{$name};
+            }
+        }
     }
 
-    protected function unbindData()
+    protected function getModelValue($name)
     {
-        $this->boundData = null;
+
+        return $this->escape($this->checkForJSON($name));
+    }
+
+    protected function escape($value)
+    {
+        if (!is_string($value)) {
+            return $value;
+        }
+        return htmlentities($value, ENT_QUOTES, 'UTF-8');
+    }
+
+    protected function unbindModel()
+    {
+        $this->model = null;
     }
 
     public function selectMonth($name)
     {
-        $options = [
+        $options = array(
             "1" => "January",
             "2" => "February",
             "3" => "March",
@@ -301,7 +332,7 @@ class FormBuilder
             "10" => "October",
             "11" => "November",
             "12" => "December",
-        ];
+        );
 
         return $this->select($name, $options);
     }

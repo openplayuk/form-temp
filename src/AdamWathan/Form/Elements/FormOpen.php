@@ -1,31 +1,34 @@
-<?php
-
-namespace AdamWathan\Form\Elements;
+<?php namespace AdamWathan\Form\Elements;
 
 class FormOpen extends Element
 {
-    protected $attributes = [
+    protected $attributes = array(
         'method' => 'POST',
         'action' => '',
-    ];
+    );
 
     protected $token;
-
     protected $hiddenMethod;
 
     public function render()
     {
-        $tags = [sprintf('<form%s>', $this->renderAttributes())];
+        $result = '<form';
+        $result .= $this->renderAttributes();
+        $result .= '>';
 
         if ($this->hasToken() && ($this->attributes['method'] !== 'GET')) {
-            $tags[] = $this->token->render();
+            $result .= $this->token->render();
         }
 
         if ($this->hasHiddenMethod()) {
-            $tags[] = $this->hiddenMethod->render();
+            $result .= $this->hiddenMethod->render();
         }
 
-        return implode($tags);
+        if (array_key_exists('model', $this->attributes)) {
+            $result .= '<input name="model" type="hidden" value="' . $this->getAttribute('model') . '"/>';
+        }
+
+        return $result;
     }
 
     protected function hasToken()
@@ -41,14 +44,12 @@ class FormOpen extends Element
     public function post()
     {
         $this->setMethod('POST');
-
         return $this;
     }
 
     public function get()
     {
         $this->setMethod('GET');
-
         return $this;
     }
 
@@ -71,7 +72,6 @@ class FormOpen extends Element
     {
         $this->token = new Hidden('_token');
         $this->token->value($token);
-
         return $this;
     }
 
@@ -80,33 +80,38 @@ class FormOpen extends Element
         $this->setMethod('POST');
         $this->hiddenMethod = new Hidden('_method');
         $this->hiddenMethod->value($method);
-
         return $this;
     }
 
     public function setMethod($method)
     {
         $this->setAttribute('method', $method);
-
         return $this;
     }
 
     public function action($action)
     {
         $this->setAttribute('action', $action);
-
         return $this;
     }
 
     public function encodingType($type)
     {
         $this->setAttribute('enctype', $type);
-
         return $this;
     }
 
     public function multipart()
     {
         return $this->encodingType('multipart/form-data');
+    }
+
+    public function translates($model)
+    {
+        if (class_exists($model, true)) {
+            $this->setAttribute('model', class_basename($model));
+            $this->setAttribute('autocomplete', 'off');
+        }
+        return $this;
     }
 }

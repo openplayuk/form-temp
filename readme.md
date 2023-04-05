@@ -1,9 +1,6 @@
-> **Important: This package is not actively maintained.** For bug fixes and new features, please fork.
-
 Form
 ========
 
-[![This Project Has Been Deprecated.](http://www.repostatus.org/badges/0.1.0/abandoned.svg)](http://www.repostatus.org/#abandoned)
 [![Code Climate](https://codeclimate.com/github/adamwathan/form/badges/gpa.svg)](https://codeclimate.com/github/adamwathan/form)
 [![Coverage Status](https://coveralls.io/repos/adamwathan/form/badge.svg?branch=master)](https://coveralls.io/r/adamwathan/form?branch=master)
 
@@ -14,7 +11,7 @@ Boring name for a boring package. Builds form HTML with a fluent-ish, hopefully 
 - [Remembering Old Input](#remembering-old-input)
 - [Error Messages](#error-messages)
 - [CSRF Protection](#csrf-protection)
-- [Data Binding](#data-binding)
+- [Model Binding](#model-binding)
 
 <a href="#installation"></a>
 ## Installation
@@ -27,7 +24,7 @@ composer require adamwathan/form
 
 ### Laravel
 
-> This package works great as a replacement Form Builder that was removed in Laravel 5. The API is different but all of the features are there.
+> This package works great as a replacement Form Builder that was removed in Laravel 5. The API is different but all of the features are there. 
 
 If you are using Laravel 4 or 5, you can register the FormServiceProvider to automatically gain access to the Old Input and Error Message functionality.
 
@@ -244,9 +241,6 @@ $options = [
 // <button type="submit">Sign Up</button>
 <?= $builder->submit('Sign Up'); ?>
 
-// <button type="reset">Reset Form</button>
-<?= $builder->reset('Reset Form'); ?>
-
 // <button type="submit" class="js-submit">Sign Up</button>
 <?= $builder->submit('Sign Up')->addClass('js-submit'); ?>
 ```
@@ -295,10 +289,6 @@ $options = [
 // Setting data-* attributes
 // <input type="text" data-foo="bar" name="foobar">
 <?= $builder->text('foobar')->data('foo', 'bar'); ?>
-
-// Multiple data-* attributes can be set at once
-// <input type="text" data-foo="bar" data-bar="foo" name="foobar">
-<?= $builder->text('foobar')->data(['foo' => 'bar', 'bar' => 'foo']); ?>
 ```
 
 <a href="#remembering-old-input"></a>
@@ -359,10 +349,10 @@ Assuming you set a CSRF token when instantiating the Formbuilder (or you are usi
 <?= $builder->token(); ?>
 ```
 
-<a href="#data-binding"></a>
-## Data Binding
+<a href="#model-binding"></a>
+## Model Binding
 
-Sometimes you might have a form where all of the fields match properties on some sort of object or array in your system, and you want the user to be able to edit that data. Data binding makes this really easy by allowing you to bind an object or array to your form that will be used to automatically provide all of the default values for your fields.
+Sometimes you might have a form where all of the fields match properties on some sort of object in your system, and you want the user to be able to edit those properties. Model binding makes this really easy by allowing you to bind a model to your form that will be used to automatically provide all of the default values for your fields.
 
 ```php
 $model->first_name = "John";
@@ -381,6 +371,6 @@ $model->date_of_birth = new DateTime('1985-05-06');
 
 > This will work out of the box with Laravel's Eloquent models.
 
-When using data binding, old input will still take priority over any of your bound values, so you can still easily redirect the user back to the form with any validation errors without losing any of the data they entered.
+When using model binding, old input will still take priority over any values on your model, so you can still easily redirect the user back to the form with any validation errors without losing any of the data they entered.
 
 > Note: Be sure to `bind` before creating any other form elements.

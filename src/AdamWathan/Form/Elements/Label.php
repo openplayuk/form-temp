@@ -1,14 +1,14 @@
-<?php
+<?php 
 
 namespace AdamWathan\Form\Elements;
 
+use Illuminate\Support\Str;
+
 class Label extends Element
 {
-    protected $element;
-
-    protected $labelBefore;
-
-    protected $label;
+    private $element;
+    private $labelBefore;
+    private $label;
 
     public function __construct($label)
     {
@@ -17,27 +17,28 @@ class Label extends Element
 
     public function render()
     {
-        $tags = [sprintf('<label%s>', $this->renderAttributes())];
+        $result = '<label';
+        $result .= $this->renderAttributes();
+        $result .= '>';
 
         if ($this->labelBefore) {
-            $tags[] = $this->label;
+            $result .= $this->label;
         }
 
-        $tags[] = $this->renderElement();
+        $result .= $this->renderElement();
 
         if (! $this->labelBefore) {
-            $tags[] = $this->label;
+            $result .= $this->label;
         }
 
-        $tags[] = '</label>';
+        $result .= '</label>';
 
-        return implode($tags);
+        return $result;
     }
 
     public function forId($name)
     {
-        $this->setAttribute('for', $name);
-
+        $this->setAttribute('for', Str::slug($name));
         return $this;
     }
 
@@ -45,7 +46,6 @@ class Label extends Element
     {
         $this->element = $element;
         $this->labelBefore = true;
-
         return $this;
     }
 
@@ -53,7 +53,6 @@ class Label extends Element
     {
         $this->element = $element;
         $this->labelBefore = false;
-
         return $this;
     }
 

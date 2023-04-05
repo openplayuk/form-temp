@@ -1,10 +1,8 @@
-<?php
-
-namespace AdamWathan\Form\Elements;
+<?php namespace AdamWathan\Form\Elements;
 
 class Email extends Text
 {
-    protected $attributes = [
+    protected $attributes = array(
         'type' => 'email',
-    ];
+    );
 }

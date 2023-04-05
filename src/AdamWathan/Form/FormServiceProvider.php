@@ -1,15 +1,23 @@
-<?php
+<?php namespace AdamWathan\Form;
 
-namespace AdamWathan\Form;
-
+use Illuminate\Support\ServiceProvider;
 use AdamWathan\Form\ErrorStore\IlluminateErrorStore;
 use AdamWathan\Form\OldInput\IlluminateOldInputProvider;
-use Illuminate\Support\ServiceProvider;
 
 class FormServiceProvider extends ServiceProvider
 {
+    /**
+     * Indicates if loading of the provider is deferred.
+     *
+     * @var bool
+     */
     protected $defer = false;
 
+    /**
+     * Register the service provider.
+     *
+     * @return void
+     */
     public function register()
     {
         $this->registerErrorStore();
@@ -19,32 +27,37 @@ class FormServiceProvider extends ServiceProvider
 
     protected function registerErrorStore()
     {
-        $this->app->singleton('adamwathan.form.errorstore', function ($app) {
+        $this->app['adamwathan.form.errorstore'] = $this->app->register(function ($app) {
             return new IlluminateErrorStore($app['session.store']);
         });
     }
 
     protected function registerOldInput()
     {
-        $this->app->singleton('adamwathan.form.oldinput', function ($app) {
+        $this->app['adamwathan.form.oldinput'] = $this->app->register(function ($app) {
             return new IlluminateOldInputProvider($app['session.store']);
         });
     }
 
     protected function registerFormBuilder()
     {
-        $this->app->singleton('adamwathan.form', function ($app) {
+        $this->app['adamwathan.form'] = $this->app->register(function ($app) {
             $formBuilder = new FormBuilder;
             $formBuilder->setErrorStore($app['adamwathan.form.errorstore']);
             $formBuilder->setOldInputProvider($app['adamwathan.form.oldinput']);
-            $formBuilder->setToken($app['session.store']->token());
+            $formBuilder->setToken($app['session.store']->getToken());
 
             return $formBuilder;
         });
     }
 
+    /**
+     * Get the services provided by the provider.
+     *
+     * @return array
+     */
     public function provides()
     {
-        return ['adamwathan.form'];
+        return array('adamwathan.form');
     }
 }

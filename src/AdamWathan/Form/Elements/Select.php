@@ -1,14 +1,12 @@
-<?php
-
-namespace AdamWathan\Form\Elements;
+<?php namespace AdamWathan\Form\Elements;
 
 class Select extends FormControl
 {
-    protected $options;
 
-    protected $selected;
+    private $options;
+    private $selected;
 
-    public function __construct($name, $options = [])
+    public function __construct($name, $options = array())
     {
         $this->setName($name);
         $this->setOptions($options);
@@ -17,7 +15,6 @@ class Select extends FormControl
     public function select($option)
     {
         $this->selected = $option;
-
         return $this;
     }
 
@@ -29,55 +26,54 @@ class Select extends FormControl
     public function options($options)
     {
         $this->setOptions($options);
-
         return $this;
     }
 
     public function render()
     {
-        return implode([
-            sprintf('<select%s>', $this->renderAttributes()),
-            $this->renderOptions(),
-            '</select>',
-        ]);
+        $result = '<select';
+        $result .= $this->renderAttributes();
+        $result .= '>';
+        $result .= $this->renderOptions();
+        $result .= '</select>';
+
+        return $result;
     }
 
     protected function renderOptions()
     {
-        list($values, $labels) = $this->splitKeysAndValues($this->options);
+        $result = '';
 
-        $tags = array_map(function ($value, $label) {
+        foreach ($this->options as $value => $label) {
             if (is_array($label)) {
-                return $this->renderOptGroup($value, $label);
+                $result .= $this->renderOptGroup($value, $label);
+                continue;
             }
-            return $this->renderOption($value, $label);
-        }, $values, $labels);
+            $result .= $this->renderOption($value, $label);
+        }
 
-        return implode($tags);
+        return $result;
     }
 
     protected function renderOptGroup($label, $options)
     {
-        list($values, $labels) = $this->splitKeysAndValues($options);
-
-        $options = array_map(function ($value, $label) {
-            return $this->renderOption($value, $label);
-        }, $values, $labels);
-
-        return implode([
-            sprintf('<optgroup label="%s">', $label),
-            implode($options),
-            '</optgroup>',
-        ]);
+        $result = "<optgroup label=\"{$label}\">";
+        foreach ($options as $value => $label) {
+            $result .= $this->renderOption($value, $label);
+        }
+        $result .= "</optgroup>";
+        return $result;
     }
 
     protected function renderOption($value, $label)
     {
-        return vsprintf('<option value="%s"%s>%s</option>', [
-            $this->escape($value),
-            $this->isSelected($value) ? ' selected' : '',
-            $this->escape($label),
-        ]);
+        $option = '<option ';
+        $option .= 'value="' . $value . '"';
+        $option .= $this->isSelected($value) ? ' selected' : '';
+        $option .= '>';
+        $option .= $label;
+        $option .= '</option>';
+        return $option;
     }
 
     protected function isSelected($value)
@@ -88,7 +84,6 @@ class Select extends FormControl
     public function addOption($value, $label)
     {
         $this->options[$value] = $label;
-
         return $this;
     }
 
@@ -99,7 +94,6 @@ class Select extends FormControl
         }
 
         $this->select($value);
-
         return $this;
     }
 
@@ -112,7 +106,6 @@ class Select extends FormControl
 
         $this->setName($name);
         $this->setAttribute('multiple', 'multiple');
-
         return $this;
     }
 }

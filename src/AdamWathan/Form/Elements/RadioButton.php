@@ -1,12 +1,10 @@
-<?php
-
-namespace AdamWathan\Form\Elements;
+<?php namespace AdamWathan\Form\Elements;
 
 class RadioButton extends Checkbox
 {
-    protected $attributes = [
+    protected $attributes = array(
         'type' => 'radio',
-    ];
+    );
 
     public function __construct($name, $value = null)
     {

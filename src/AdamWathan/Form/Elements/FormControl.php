@@ -1,6 +1,4 @@
-<?php
-
-namespace AdamWathan\Form\Elements;
+<?php namespace AdamWathan\Form\Elements;
 
 abstract class FormControl extends Element
 {
@@ -11,56 +9,43 @@ abstract class FormControl extends Element
 
     protected function setName($name)
     {
-        $this->setAttribute('name', $name);
+        $this->setAttribute('name', str_replace("'","",$name));
     }
 
-    public function required($conditional = true)
+    public function required()
     {
-        $this->setBooleanAttribute('required', $conditional);
-
+        $this->setAttribute('required', 'required');
         return $this;
     }
 
     public function optional()
     {
         $this->removeAttribute('required');
-
         return $this;
     }
 
-    public function disable($conditional = true)
+    public function disable()
     {
-        $this->setBooleanAttribute('disabled', $conditional);
-
-        return $this;
-    }
-
-    public function readonly($conditional = true)
-    {
-        $this->setBooleanAttribute('readonly', $conditional);
-
+        $this->setAttribute('disabled', 'disabled');
         return $this;
     }
 
     public function enable()
     {
         $this->removeAttribute('disabled');
-        $this->removeAttribute('readonly');
-
         return $this;
     }
 
     public function autofocus()
     {
         $this->setAttribute('autofocus', 'autofocus');
-
         return $this;
     }
 
     public function unfocus()
     {
         $this->removeAttribute('autofocus');
-
         return $this;
     }
+
 }

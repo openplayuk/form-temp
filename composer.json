@@ -1,29 +1,26 @@
 {
-    "name": "adamwathan/form",
-    "description": "A basic framework agnostic form building package with a few extra niceties like remembering old input and retrieving error messages.",
-    "authors": [
-        {
-            "name": "Adam Wathan",
-            "email": "adam.wathan@gmail.com"
-        }
-    ],
-    "license": "MIT",
-    "require": {
-        "php": ">=5.4.0"
-    },
-    "require-dev": {
-        "illuminate/support": "4.*",
-        "phpunit/phpunit": "3.7.*",
-        "mockery/mockery": "~0.9",
-        "satooshi/php-coveralls": "^1.0"
-    },
-    "autoload": {
-        "psr-0": {
-            "AdamWathan\\Form": "src/"
-        }
-    },
-    "autoload-dev": {
-        "classmap": ["tests/"]
-    },
-    "minimum-stability": "dev"
+  "name": "openplayuk/form-json",
+  "description": "A basic framework agnostic form building package with a few extra niceties like remembering old input and retrieving error messages.",
+  "authors": [
+    {
+      "name": "Ian Pridham",
+      "email": "info@oxygen24.com"
+    }
+  ],
+  "license": "MIT",
+  "require": {
+    "php": ">=5.3.0"
+  },
+  "require-dev": {
+    "illuminate/support": "6.*",
+    "phpunit/phpunit": "3.7.*",
+    "mockery/mockery": "~0.9",
+    "satooshi/php-coveralls": "dev-master"
+  },
+  "autoload": {
+    "psr-0": {
+      "AdamWathan\\Form": "src/"
+    }
+  },
+  "minimum-stability": "stable"
 }
